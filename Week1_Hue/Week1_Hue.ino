@@ -11,7 +11,8 @@
 //Lights:   4, 5, 6, 7, 8, 9, 10, 11, 12
 //IP:       192.168.1.179
 
-String url = "http://192.168.1.179/api/vncW9MBkPuGAc0Uy7hR4fAvW--V01PNGfMnCkDfr/lights/7/state";
+String url_b = "http://192.168.1.179/api/vncW9MBkPuGAc0Uy7hR4fAvW--V01PNGfMnCkDfr/lights/";
+String url_e = "/state"; 
 
 String json_on_b = "{\"on\": true, \"hue\": ";
 String json_on_e = "}";
@@ -36,33 +37,41 @@ void loop() {
 
   HTTPClient http;
 
-  Serial.println("Updating light 7: " + state);
-  http.begin(url);
-
-  int code = -1;
-
-  if(state)
-    code = http.sendRequest("PUT", json_off);
-  else
-  {
-    int rnd = random(0, 65535);
-    code = http.sendRequest("PUT", (json_on_b + rnd + json_on_e));
-  }
+  int i;
 
   state = !state;
-  
 
-  if(code == 200)
+  for(i = 4; i<13; i++)
   {
-    Serial.println("HTTP Success");
-    String payload = http.getString();
 
-    Serial.println("Payload: " + payload);
+    String temp = "Updating light " + i;
+    temp += ": " + state;
+    Serial.println(temp);
+    http.begin(url_b + i + url_e);
+  
+    int code = -1;
+  
+    if(state)
+      code = http.sendRequest("PUT", json_off);
+    else
+    {
+      int rnd = random(0, 65535);
+      code = http.sendRequest("PUT", (json_on_b + rnd + json_on_e));
+    }
+  
+    if(code == 200)
+    {
+      Serial.println("HTTP Success");
+      String payload = http.getString();
+  
+      Serial.println("Payload: " + payload);
+    }
+    else
+       Serial.println("HTTP Failure");
+  
+    http.end();
+    delay(5);
   }
-  else
-     Serial.println("HTTP Failure");
 
-  http.end();
-
-  delay(3000);
+  delay(1500);
 }
